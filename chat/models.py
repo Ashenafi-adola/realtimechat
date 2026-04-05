@@ -8,8 +8,8 @@ class CustomUser(AbstractUser):
         return self.username
     
 class Message(models.Model):
-    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    reciever = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="sender")
+    reciever = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='reciever')
     body = models.CharField(max_length=500)
     sent_at = models.DateTimeField(auto_now_add=True)
     edited_at = models.DateTimeField(auto_now=True)
