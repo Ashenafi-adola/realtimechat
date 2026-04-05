@@ -15,6 +15,7 @@ def signUpPage(request):
             return redirect('home')
     context = {
         'form':form,
+        'page':'signup'
     }
     return render(request, 'chat/authpage.html', context)
 
@@ -24,8 +25,16 @@ def signInPage(request):
         password = request.POST.get('password')
         user = authenticate(request, username, password)
         if user != None:
+            login(request, user)
             return redirect('home')
+    context = {
+        "page":"signin"
+    }
+    return render(request, 'chat/authpage.html', context)
+
+def homePage(request):
+
     context = {
 
     }
-    return render(request, 'chat/authpage.html', context)
+    return render(request, 'chat/home.html', context)
