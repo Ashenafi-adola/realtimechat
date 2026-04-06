@@ -26,7 +26,7 @@ class CustomUserCreationForm(UserCreationForm):
 class MessageForm(ModelForm):
     class Meta:
         model = Message
-        fields = "__all__"
+        fields = ['body']
         widgets = {
             'body': Textarea(attrs={
                 'class': 'form-control',

@@ -41,18 +41,14 @@ def homePage(request):
 
 def chatPage(request, pk):
     user = CustomUser.objects.get(id=pk)
-    messages = Message.objects.filter(user=user)
-
-    if request.method == "POST":
-        form = MessageForm(request.POST)
-        if form.is_valid():
-            message = form.save(commit=False)
-            message.user = user
-            message.save()
-            return redirect('home')
+    messages = Message.objects.all()
+    form = MessageForm()
+    users = CustomUser.objects.all()
 
     context = {
-        'user':user,
-        'messages':messages
+        'friend':user,
+        'messages':messages,
+        'form':form,
+        'users':users
     }
-    return render(request, 'chat/chat.html', context)
+    return render(request, 'chat/chatroom.html', context)
