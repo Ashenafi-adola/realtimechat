@@ -71,6 +71,12 @@ TEMPLATES = [
 WSGI_APPLICATION = 'chatapp.wsgi.application'
 ASGI_APPLICATION = 'chatapp.asgi.application'
 
+CHANNEL_LAYERS = {
+    'default':{
+        'BACKEND':'channels.layers.InMemoryChannelLayer'
+    }
+}
+
 
 AUTH_USER_MODEL = 'chat.CustomUser'
 
