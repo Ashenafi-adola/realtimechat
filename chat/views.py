@@ -33,8 +33,26 @@ def signInPage(request):
 
 def homePage(request):
     users = CustomUser.objects.all()
-    
-    context = {
 
+    context = {
+        'users':users
     }
     return render(request, 'chat/home.html', context)
+
+def chatPage(request, pk):
+    user = CustomUser.objects.get(id=pk)
+    messages = Message.objects.filter(user=user)
+
+    if request.method == "POST":
+        form = MessageForm(request.POST)
+        if form.is_valid():
+            message = form.save(commit=False)
+            message.user = user
+            message.save()
+            return redirect('home')
+
+    context = {
+        'user':user,
+        'messages':messages
+    }
+    return render(request, 'chat/chat.html', context)
