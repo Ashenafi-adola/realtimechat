@@ -6,7 +6,7 @@ from . models import CustomUser, Message
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = CustomUser
-        fields = ["username", "profile", "email", "password1", "password2"]
+        fields = ["username", "profile", "password1", "password2"]
         widgets = {
             'username': TextInput(attrs={
                 'class':"form-control",
@@ -18,7 +18,6 @@ class CustomUserCreationForm(UserCreationForm):
         }
     def save(self, commit = True):
         user = super().save(commit=False)
-        user.email = self.cleaned_data['email']
         user.profile = self.cleaned_data['profile']
         if commit:
             user.save()

@@ -12,6 +12,7 @@ def signUpPage(request):
             user = form.save(commit=False)
             user.username = user.username.lower()
             user.save()
+            login(request, user)
             return redirect('home')
     context = {
         'form':form,
@@ -23,17 +24,16 @@ def signInPage(request):
     if request.method == "POST":
         username = request.POST.get('username').lower()
         password = request.POST.get('password')
-        user = authenticate(request, username, password)
-        if user != None:
-            login(request, user)
-            return redirect('home')
+        user = authenticate(request, username=username, password=password)
+        print(user)
     context = {
         "page":"signin"
     }
     return render(request, 'chat/authpage.html', context)
 
 def homePage(request):
-
+    users = CustomUser.objects.all()
+    
     context = {
 
     }

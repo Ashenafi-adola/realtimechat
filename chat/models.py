@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractUser
 class CustomUser(AbstractUser):
     profile = models.ImageField(upload_to='profiles/', blank=True, null=True)
 
+    USERNAME_FIELD = 'username'
     def __str__(self):
         return self.username
     
