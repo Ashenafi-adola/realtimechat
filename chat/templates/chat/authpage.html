@@ -3,23 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>auth</title>
+    <title>Auth</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-    <div>
-        <form action="" method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            {% if page == "signup" %}
-                {{form}}
-                <button type="submit">Sign UP</button>
-            {% else %}
-                <label for="username">Username : </label>
-                <input type="text" name="username" placeholder="Username">
-                <label for="password">Password</label>
-                <input type="password" name="password" placeholder="Password">
-                <button type="submit">Sign In</button>
-            {% endif %}
-        </form>
+<body class="bg-light">
+    <div class="container d-flex align-items-center justify-content-center min-vh-100">
+        <div class="row justify-content-center w-100">
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h2 class="card-title text-center mb-4">
+                            {% if page == "signup" %}Sign Up{% else %}Sign In{% endif %}
+                        </h2>
+                        <form action="" method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            {% if page == "signup" %}
+                                {{ form.as_p }}
+                            {% else %}
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">Username</label>
+                                    <input type="text" name="username" id="username" class="form-control" placeholder="Username" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Password</label>
+                                    <input type="password" name="password" id="password" class="form-control" placeholder="Password" required>
+                                </div>
+                            {% endif %}
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    {% if page == "signup" %}Sign Up{% else %}Sign In{% endif %}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
