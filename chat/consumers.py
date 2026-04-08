@@ -30,8 +30,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message = text_data_json['message']
         reciever = text_data_json['reciever']
         sender = text_data_json['sender']
-        await self.save_message(message)
-
+        id = await self.save_message(message)
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -40,6 +39,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'sender': sender,
                 'reciever': reciever,
                 'timestamp': str(self.get_current_timestamp()),
+                'id': id
             }
         )
     async def chat_message(self, event):
@@ -47,19 +47,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
         sender = event['sender']
         reciever = event['reciever']
         timestamp = event['timestamp']
+        id = event['id']
         await self.send(text_data=json.dumps({
             'type': 'chat',
             'message': message,
             'sender': sender,
             'reciever': reciever,
             'timestamp':timestamp,
+            'id': id
         }))
 
     @database_sync_to_async
     def save_message(self, message):
         sen = CustomUser.objects.get(id=self.scope['user'].id)
         rec = CustomUser.objects.get(username=self.scope['url_route']['kwargs']['friend'])
-        Message.objects.create(sender=sen, reciever=rec, body=message)
+        mes = Message(sender=sen, reciever=rec, body=message)
+        mes.save()
+        return mes.id
 
     def  get_current_timestamp(self):
         return timezone.now()

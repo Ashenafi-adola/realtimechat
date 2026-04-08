@@ -13,12 +13,12 @@
         <small class="text-muted"></small>
         
     </div>
-    <div class="card-body d-flex flex-column p-3" style="height: 0; flex-grow: 1;">
+    <div class="card-body d-flex flex-column p-3 overflow-hidden" style="min-height: 0; flex: 1 1 0;">
         
-        <div class="flex-grow-1 overflow-auto" id="messages">
+        <div class="flex-grow-1 overflow-auto" id="messages" style="min-height: 0;">
             {% for message in messages %}
                 {% if message.sender == request.user and message.reciever == friend or message.reciever == request.user and message.sender == friend %}
-                    <div class="mb-2 d-flex {% if message.sender == request.user %}justify-content-end{% else %}justify-content-start{% endif %}">
+                    <div class="mb-2 d-flex {% if message.sender == request.user %}justify-content-end{% else %}justify-content-start{% endif %}" id="message-{{ message.id }}">
                         <div class="message-bubble {% if message.sender == request.user %}bg-primary text-white{% else %}bg-light{% endif %} p-3 rounded" style="max-width: 70%;">
                             {% if message.sender != request.user %}
                                 <strong class="text-dark mb-1 d-block">@{{message.sender}}</strong>
@@ -31,10 +31,11 @@
                             {% endif %}
                             <p class="mb-1">{{message.body}}</p>
                             {% if message.sender == request.user %}
-                            <div class="d-flex gap-1 justify-content-end mt-2">
-                                <a href="" class="btn btn-sm btn-outline-light">Edit</a>
-                                <a href="" class="btn btn-sm btn-outline-danger">Delete</a>
-                            </div>
+                            <form  class="d-flex gap-1 justify-content-end mt-2" class="message-options" method="post"">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-light">Edit</button>
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
                             {% endif %}
                         </div>
                     </div>
@@ -72,7 +73,7 @@
             if(data.sender === user){
                 messages.insertAdjacentHTML('beforeend', 
                     `
-                    <div class="mb-2 d-flex justify-content-end" style="width:500px">
+                    <div class="mb-2 d-flex justify-content-end" style="width:500px" id="message-${data.id}">
                         <div class="message-bubble p-3 rounded bg-primary text-white" style="max-width: 70%;">
                             <strong class="text-dark mb-1 d-block">You</strong>
                             <p class="mb-1">${data.message}</p>
@@ -111,6 +112,13 @@
             'sender': user,
         }));
         messageInput.value = '';
+    });
+
+    let act = document.querySelector('.message-options');
+    act.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        console.log("Clicked");
     });
     
 
