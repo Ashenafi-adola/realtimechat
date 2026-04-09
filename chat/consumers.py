@@ -27,21 +27,32 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        message = text_data_json['message']
-        reciever = text_data_json['reciever']
-        sender = text_data_json['sender']
-        id = await self.save_message(message)
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'chat_message',
-                'message': message,
-                'sender': sender,
-                'reciever': reciever,
-                'timestamp': str(self.get_current_timestamp()),
-                'id': id
-            }
-        )
+        if text_data_json['command'] == 'send':
+            message = text_data_json['message']
+            reciever = text_data_json['reciever']
+            sender = text_data_json['sender']
+            id = await self.save_message(message)
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'chat_message',
+                    'message': message,
+                    'sender': sender,
+                    'reciever': reciever,
+                    'timestamp': str(self.get_current_timestamp()),
+                    'id': id
+                }
+            )
+        else:
+            id = text_data_json['id']
+            await self.delete_message(id)
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'delete_chat',
+                    'id': id,
+                }
+            )
     async def chat_message(self, event):
         message = event['message']
         sender = event['sender']
@@ -56,6 +67,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'timestamp':timestamp,
             'id': id
         }))
+    async def delete_chat(self, event):
+        id = event['id']
+        await self.send(text_data=json.dumps({
+            'type': 'delete',
+            'id' : id
+        }))
 
     @database_sync_to_async
     def save_message(self, message):
@@ -64,6 +81,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         mes = Message(sender=sen, reciever=rec, body=message)
         mes.save()
         return mes.id
+
+    @database_sync_to_async
+    def delete_message(self, id):
+        message = Message.objects.get(id=id)
+        message.delete()
+        print('message deleted from data base')
 
     def  get_current_timestamp(self):
         return timezone.now()

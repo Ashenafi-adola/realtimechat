@@ -18,7 +18,7 @@
         <div class="flex-grow-1 overflow-auto" id="messages" style="min-height: 0;">
             {% for message in messages %}
                 {% if message.sender == request.user and message.reciever == friend or message.reciever == request.user and message.sender == friend %}
-                    <div class="mb-2 d-flex {% if message.sender == request.user %}justify-content-end{% else %}justify-content-start{% endif %}" id="message-{{ message.id }}">
+                    <div class="mb-2 d-flex {% if message.sender == request.user %}justify-content-end{% else %}justify-content-start{% endif %}" id="message-{{message.id}}">
                         <div class="message-bubble {% if message.sender == request.user %}bg-primary text-white{% else %}bg-light{% endif %} p-3 rounded" style="max-width: 70%;">
                             {% if message.sender != request.user %}
                                 <strong class="text-dark mb-1 d-block">@{{message.sender}}</strong>
@@ -33,8 +33,9 @@
                             {% if message.sender == request.user %}
                             <form  class="d-flex gap-1 justify-content-end mt-2" class="message-options" method="post"">
                                 {% csrf_token %}
+                                {{ message.id|json_script:"ms-id" }}
                                 <button type="submit" class="btn btn-sm btn-outline-light">Edit</button>
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="deleteMessage( JSON.parse(document.getElementById('ms-id').textContent) )">Delete</button>
                             </form>
                             {% endif %}
                         </div>
@@ -66,39 +67,45 @@
     chatSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
         console.log("Data: ", data);
+        let messages = document.getElementById('messages');
 
         if (data.type === 'chat'){
-            let messages = document.getElementById('messages');
-            
             if(data.sender === user){
-                messages.insertAdjacentHTML('beforeend', 
-                    `
-                    <div class="mb-2 d-flex justify-content-end" style="width:500px" id="message-${data.id}">
-                        <div class="message-bubble p-3 rounded bg-primary text-white" style="max-width: 70%;">
-                            <strong class="text-dark mb-1 d-block">You</strong>
-                            <p class="mb-1">${data.message}</p>
-                            <div class="d-flex gap-1 justify-content-end mt-2">
-                                <a href="" class="btn btn-sm btn-outline-light">Edit</a>
-                                <a href="" class="btn btn-sm btn-outline-danger">Delete</a>
-                            </div>
+                
+                let message = document.createElement('div');
+                message.classList.add(['mb-2', 'd-flex', 'justify-content-end']);
+                message.id = `message-${data.id}`;
+                messages.innerHTML = `
+                    <div class="message-bubble p-3 rounded bg-primary text-white" style="max-width: 70%;">
+                        <strong class="text-dark mb-1 d-block">You</strong>
+                        <p class="mb-1">${data.message}</p>
+                        <div class="d-flex gap-1 justify-content-end mt-2">
+                            <a href="" class="btn btn-sm btn-outline-light">Edit</a>
+                            <a href="" class="btn btn-sm btn-outline-danger" id="${data.id}" onclick="deleteMessage( JSON.parse(document.getElementById('ms-id').textContent) )">Delete</a>
                         </div>
                     </div>
-                    `
-                );
+                `;
+                messages.appendChild(message);
             }
             else if(data.sender === friend){
-                messages.insertAdjacentHTML('beforeend', 
-                    `
-                    <div class="mb-2 d-flex justify-content-start">
-                        <div class="message-bubble p-3 rounded bg-light text-white" style="max-width: 70%;">
-                            <strong class="text-dark mb-1 d-block">${data.sender}</strong>
-                            <p class="mb-1" style="color:black">${data.message}</p>
-                        </div>
+                
+                let message = document.createElement("div")
+                message.classList.add(['mb-2', 'd-flex', 'justify-contet-start'])
+                message.id = `message-${data.id}`
+                message.innerHTML = `
+                    <div class="message-bubble p-3 rounded bg-light text-white" style="max-width: 70%;">
+                        <strong class="text-dark mb-1 d-block">${data.sender}</strong>
+                        <p class="mb-1" style="color:black">${data.message}</p>
                     </div>
-                    `
-                );
+                `;
+                messages.appendChild(message)
             }
                 
+        }
+        else if( data.type == 'delete'){
+            console.log(data)
+            let message = document.getElementById(`message-${data.id}`);
+            messages.removeChild(message);
         }
     }
     let form = document.getElementById('form');
@@ -107,6 +114,7 @@
         let messageInput = document.getElementById('textInput');
         let message = messageInput.value;
         chatSocket.send(JSON.stringify({
+            'command': 'send',
             'message': message,
             'reciever': friend,
             'sender': user,
@@ -120,6 +128,13 @@
 
         console.log("Clicked");
     });
+
+    function deleteMessage(id){
+        chatSocket.send(JSON.stringify({
+            'command':'delete',
+            'id': id
+        }))
+    }
     
 
 </script>
