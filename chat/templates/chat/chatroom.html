@@ -1,13 +1,15 @@
 {% extends 'chat/home.html' %}
-
+{% load static %}
 {% block chat %}
 <div class="card h-100 border-0 d-flex flex-column">
     <div class="card-header">
         <div class="d-flex align-items-center">
             <a href="" class="text-decoration-none">
-                <img src="{{friend.profile.url}}" alt="profile" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" class="me-2">
+                <img src="{{ friend.profile.url }}" alt="profile" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" class="me-2">
             </a>
-        
+            <div>
+                <h1 id="check"></h1>
+            </div>
             <h3 class="card-title mb-0">{{ friend.username }}</h3>
         </div>
         <small class="text-muted"></small>
@@ -23,19 +25,16 @@
                             {% if message.sender != request.user %}
                                 <strong class="text-dark mb-1 d-block">@{{message.sender}}</strong>
                             {% endif %}
-                            <small class="{% if message.sender == request.user %}text-white-50{% else %}text-muted{% endif %} d-block mb-2">{{message.updated_at | timesince}} ago</small>
-                            {% if message.shared_media.url != None %}
-                                <a href="{% url 'shared_fr_media' message.id %}">
-                                    <img src="{{ message.shared_media.url }}" alt="" class="img-fluid rounded mb-2" style="max-width: 300px;">
-                                </a>
-                            {% endif %}
+                            <small class="{% if message.sender == request.user %}text-white-50{% else %}text-muted{% endif %} d-block mb-2">{{message.edited_at | timesince}} ago</small>
                             <p class="mb-1">{{message.body}}</p>
                             {% if message.sender == request.user %}
-                            <form  class="d-flex gap-1 justify-content-end mt-2" class="message-options" method="post"">
+                            <form  class="d-flex gap-1 justify-content-end mt-2" class="message-options" method="post" id="action-form">
                                 {% csrf_token %}
-                                {{ message.id|json_script:"ms-id" }}
-                                <button type="submit" class="btn btn-sm btn-outline-light">Edit</button>
-                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="deleteMessage( JSON.parse(document.getElementById('ms-id').textContent) )">Delete</button>
+                                {{ message.id |json_script:"ms-id" }}
+                                {{ message.body|json_script:'ms-body'}}
+                                <div id="ms-id">{{message.id}}</div>
+                                <button type="submit" class="btn btn-sm btn-outline-light" onclick="editMessage( JSON.parse(document.getElementById('ms-body').textContent) )">Edit</button>
+                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="deleteMessage( '{{ message.id }}' )">Delete {{message.id}}</button>
                             </form>
                             {% endif %}
                         </div>
@@ -64,10 +63,11 @@
     let url = 'ws://' + window.location.host + '/ws/chat/' + friend + '/';
     const chatSocket = new WebSocket(url);
 
-    chatSocket.onmessage = function(e) {
+    chatSocket.onmessage = (e) => {
         const data = JSON.parse(e.data);
         console.log("Data: ", data);
         let messages = document.getElementById('messages');
+        messages.scroll(scrollTo)
 
         if (data.type === 'chat'){
             if(data.sender === user){
@@ -75,9 +75,10 @@
                 let message = document.createElement('div');
                 message.classList.add(['mb-2', 'd-flex', 'justify-content-end']);
                 message.id = `message-${data.id}`;
-                messages.innerHTML = `
-                    <div class="message-bubble p-3 rounded bg-primary text-white" style="max-width: 70%;">
+                message.innerHTML = `
+                    <div class="justify-content-end message-bubble p-3 rounded bg-primary text-white" style="max-width: 70%;">
                         <strong class="text-dark mb-1 d-block">You</strong>
+                        <small class="text-white-50 d-block mb-2">${data.timestamp} ago</small>
                         <p class="mb-1">${data.message}</p>
                         <div class="d-flex gap-1 justify-content-end mt-2">
                             <a href="" class="btn btn-sm btn-outline-light">Edit</a>
@@ -95,6 +96,7 @@
                 message.innerHTML = `
                     <div class="message-bubble p-3 rounded bg-light text-white" style="max-width: 70%;">
                         <strong class="text-dark mb-1 d-block">${data.sender}</strong>
+                        <small class="text-muted d-block mb-2">${data.timestamp} ago</small>
                         <p class="mb-1" style="color:black">${data.message}</p>
                     </div>
                 `;
@@ -122,20 +124,21 @@
         messageInput.value = '';
     });
 
-    let act = document.querySelector('.message-options');
-    act.addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        console.log("Clicked");
-    });
+    
+    function editMessage(message) {
+        let edit = document.getElementById('textInput');
+        edit.textContent = message;
+        message.preventDefault();
+    }
 
     function deleteMessage(id){
+        alert("are you sure you want to delete this message");
         chatSocket.send(JSON.stringify({
             'command':'delete',
             'id': id
         }))
+
     }
     
-
 </script>
 {% endblock %}

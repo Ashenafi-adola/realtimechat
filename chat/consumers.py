@@ -45,6 +45,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
         else:
             id = text_data_json['id']
+            print(id)
             await self.delete_message(id)
             await self.channel_layer.group_send(
                 self.room_group_name,
@@ -86,7 +87,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def delete_message(self, id):
         message = Message.objects.get(id=id)
         message.delete()
-        print('message deleted from data base')
 
     def  get_current_timestamp(self):
         return timezone.now()
