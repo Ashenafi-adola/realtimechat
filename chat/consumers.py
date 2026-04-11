@@ -43,9 +43,25 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     'id': id
                 }
             )
-        else:
+        elif text_data_json['command'] == 'edit':
             id = text_data_json['id']
-            print(id)
+            message = text_data_json['message']
+            sender = text_data_json['sender']
+            reciever = text_data_json['reciever']
+            edited_at = await self.edit_message(id, message)
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'edit_chat',
+                    'message': message,
+                    'sender': sender,
+                    'reciever': reciever,
+                    'timestamp': str(edited_at),
+                    'id': id
+                }
+            )
+        elif text_data_json['command'] == 'delete':
+            id = text_data_json['id']
             await self.delete_message(id)
             await self.channel_layer.group_send(
                 self.room_group_name,
@@ -75,6 +91,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'id' : id
         }))
 
+    async def edit_chat(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'edit',
+            'message': event['message'],
+            'sender': event['sender'],
+            'reciever': event['reciever'],
+            'timestamp': event['timestamp'],
+            'id': event['id']
+        }))
+
     @database_sync_to_async
     def save_message(self, message):
         sen = CustomUser.objects.get(id=self.scope['user'].id)
@@ -87,6 +113,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def delete_message(self, id):
         message = Message.objects.get(id=id)
         message.delete()
+
+    @database_sync_to_async
+    def edit_message(self, id, message_text):
+        message = Message.objects.get(id=id)
+        message.body = message_text
+        message.save()
+        return message.edited_at
 
     def  get_current_timestamp(self):
         return timezone.now()
