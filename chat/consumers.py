@@ -118,6 +118,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def edit_message(self, id, message_text):
         message = Message.objects.get(id=id)
         message.body = message_text
+        message.edited = True
         message.save()
         return message.edited_at
 

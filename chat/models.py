@@ -14,6 +14,7 @@ class Message(models.Model):
     body = models.CharField(max_length=2000)
     sent_at = models.DateTimeField(auto_now_add=True)
     edited_at = models.DateTimeField(auto_now=True)
+    edited = models.BooleanField(default=False)
 
     def __str__(self):
         return self.body[:20]
