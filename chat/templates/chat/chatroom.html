@@ -11,10 +11,13 @@
                 <h1 id="check"></h1>
             </div>
             <h3 class="card-title mb-0">{{ friend.username }}</h3>
-            {% if friend.online_status %}
-                <small>online</small>
-            {% endif %}
+            
         </div>
+        {% if friend.online_status %}
+            
+                <small style="color: blue;">online</small>
+
+        {% endif %}
         <small class="text-muted"></small>
         
     </div>

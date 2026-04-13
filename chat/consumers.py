@@ -18,6 +18,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
         await self.accept()
+        if self.scope['user'].is_authenticated:
+            await self.update_user_online_status(True)
     
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(
@@ -121,6 +123,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message.edited = True
         message.save()
         return message.edited_at
+    
+    @database_sync_to_async
+    def update_user_online_status(self, status):
+        user = CustomUser.objects.get(id=self.scope['user'].id)
+        user.online_status = status
+        user.save()
 
     def  get_current_timestamp(self):
         return timezone.now()
