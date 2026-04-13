@@ -19,7 +19,7 @@
                             {% csrf_token %}
                             {% if page == "signup" %}
                                 {{ form.as_p }}
-                                <p>Already have an account? <a href="{% url 'login' %}">login here</a></p>
+                                <p>Already have an account? Sign in<a href="{% url 'login' %}"> Here</a></p>
                             {% else %}
                                 <div class="mb-3">
                                     <label for="username" class="form-label">Username</label>
@@ -29,7 +29,7 @@
                                     <label for="password" class="form-label">Password</label>
                                     <input type="password" name="password" id="password" class="form-control" placeholder="Password" required>
                                 </div>
-                                <p>Don't have an account? <a href="{% url 'signup' %}">login here</a></p>
+                                <p>Don't have an account? Sign up<a href="{% url 'signup' %}"> Here</a></p>
                             {% endif %}
                             <div class="d-grid">
                                 <button type="submit" class="btn btn-primary">
