@@ -18,14 +18,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
         await self.accept()
-        if self.scope['user'].is_authenticated:
-            await self.update_user_online_status(True)
+        await self.update_user_online_status(user, True)   
     
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
         )
+        await self.update_user_online_status(self.scope['user'], False)
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
@@ -125,8 +125,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         return message.edited_at
     
     @database_sync_to_async
-    def update_user_online_status(self, status):
-        user = CustomUser.objects.get(id=self.scope['user'].id)
+    def update_user_online_status(self,user, status):
         user.online_status = status
         user.save()
 
