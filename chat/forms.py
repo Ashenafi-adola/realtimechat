@@ -1,18 +1,27 @@
 from django.forms import ModelForm
-from django.forms import TextInput, FileInput, Textarea
+from django.forms import TextInput, FileInput, Textarea, EmailInput, PasswordInput
 from django.contrib.auth.forms import UserCreationForm
 from . models import CustomUser, Message
 
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = CustomUser
-        fields = ["username", "profile", "password1", "password2"]
+        fields = ["username","email", "profile", "password1", "password2"]
         widgets = {
             'username': TextInput(attrs={
                 'class':"form-control",
             }),
+            'email': EmailInput(attrs={
+                'class':"form-control"
+            }),
             'profile': FileInput(attrs={
                 'class': "profile",
+            }),
+            'password1': PasswordInput(attrs={
+                'class': 'form-control'
+            }),
+            'password2': PasswordInput(attrs={
+                'class': 'form-control'
             })
 
         }

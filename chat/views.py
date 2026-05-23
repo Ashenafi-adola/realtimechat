@@ -4,15 +4,24 @@ from . models import Message, CustomUser
 from . forms import CustomUserCreationForm, MessageForm
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail
 
 def signUpPage(request):
     form = CustomUserCreationForm()
     if request.method == "POST":
         form = CustomUserCreationForm(request.POST, request.FILES)
+        email = request.POST.get("email")
         if form.is_valid():
             user = form.save(commit=False)
             user.username = user.username.lower()
             user.save()
+            send_mail(
+                "wellcome to I-Chat",
+                "Hi there, thank you for signing up to I-Chat. We are excited to have you on board! If you have any questions or need assistance, feel free to reach out to our support team. Happy chatting!",
+                "ashenafiadola05@gmail.com",
+                [f"{email}"],
+                fail_silently=False,
+            )
             login(request, user)
             return redirect('home')
     context = {

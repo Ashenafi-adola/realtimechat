@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser
 
 class CustomUser(AbstractUser):
     profile = models.ImageField(upload_to='profiles/', blank=True, null=True)
+    email = models.EmailField(unique=True, null=False, blank=False)
     online_status = models.BooleanField(default=False)
     
     USERNAME_FIELD = 'username'
